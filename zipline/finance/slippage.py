@@ -16,7 +16,7 @@ from __future__ import division
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 import math
-from six import with_metaclass, iteritems
+from six import with_metaclass
 from toolz import merge
 
 import numpy as np
@@ -161,15 +161,6 @@ class SlippageModel(with_metaclass(ABCMeta)):
             if txn:
                 self._volume_for_bar += abs(txn.amount)
                 yield order, txn
-
-    def __eq__(self, other):
-        return self.asdict() == other.asdict()
-
-    def __hash__(self):
-        return hash((
-            type(self),
-            tuple(sorted(iteritems(self.asdict())))
-        ))
 
     def asdict(self):
         return self.__dict__
