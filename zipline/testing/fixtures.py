@@ -1132,6 +1132,7 @@ class WithBcolzFutureMinuteBarReader(WithFutureMinuteBarData, WithTmpDir):
     zipline.testing.create_minute_bar_data
     """
     BCOLZ_FUTURE_MINUTE_BAR_PATH = 'minute_future_pricing'
+    OHLC_RATIOS_PER_SID = None
 
     @classmethod
     def make_bcolz_future_minute_bar_rootdir_path(cls):
@@ -1151,6 +1152,7 @@ class WithBcolzFutureMinuteBarReader(WithFutureMinuteBarData, WithTmpDir):
             days[0],
             days[-1],
             FUTURES_MINUTES_PER_DAY,
+            ohlc_ratios_per_sid=cls.OHLC_RATIOS_PER_SID,
         )
         writer.write(cls.make_future_minute_bar_data())
 

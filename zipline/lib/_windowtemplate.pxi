@@ -12,7 +12,7 @@ zipline.lib._intwindow
 zipline.lib._datewindow
 """
 from numpy cimport ndarray
-from numpy import asanyarray
+from numpy import asanyarray, dtype
 
 
 class Exhausted(Exception):
@@ -40,6 +40,7 @@ cdef class AdjustedArrayWindow:
         readonly Py_ssize_t window_length
         Py_ssize_t anchor, max_anchor, next_adj
         Py_ssize_t perspective_offset
+        object rounding_places
         dict adjustments
         list adjustment_indices
         ndarray output
@@ -50,7 +51,8 @@ cdef class AdjustedArrayWindow:
                   dict adjustments not None,
                   Py_ssize_t offset,
                   Py_ssize_t window_length,
-                  Py_ssize_t perspective_offset):
+                  Py_ssize_t perspective_offset,
+                  object rounding_places):
         self.data = data
         self.view_kwargs = view_kwargs
         self.adjustments = adjustments
@@ -67,6 +69,7 @@ cdef class AdjustedArrayWindow:
                             "is perspective_offset={0}".format(
                                 perspective_offset))
         self.perspective_offset = perspective_offset
+        self.rounding_places = rounding_places
         self.max_anchor = data.shape[0]
 
         self.next_adj = self.pop_next_adj()
@@ -138,6 +141,8 @@ cdef class AdjustedArrayWindow:
         new_out = asanyarray(self.data[anchor - self.window_length:anchor])
         if view_kwargs:
             new_out = new_out.view(**view_kwargs)
+        if self.rounding_places is not None and new_out.dtype is dtype('float64'):
+            new_out = new_out.round(self.rounding_places)
         new_out.setflags(write=False)
         self.output = new_out
 
