@@ -55,6 +55,14 @@ class DataPortalTestBase(WithDataPortal,
     OHLC_RATIOS_PER_SID = {10001: 100000}
 
     @classmethod
+    def make_root_symbols_info(self):
+        return pd.DataFrame({
+            'root_symbol': ['BAR', 'BUZ'],
+            'root_symbol_id': [1, 2],
+            'exchange': ['CME', 'CME'],
+        })
+
+    @classmethod
     def make_futures_info(cls):
         trading_sessions = cls.trading_sessions['us_futures']
         return pd.DataFrame({
@@ -450,8 +458,10 @@ class DataPortalTestBase(WithDataPortal,
     def test_price_rounding(self, frequency, field):
         equity = self.asset_finder.retrieve_asset(2)
         future = self.asset_finder.retrieve_asset(10001)
+        cf = self.data_portal.asset_finder.create_continuous_future(
+            'BUZ', 0, 'calendar', None,
+        )
         minutes = self.nyse_calendar.minutes_for_session(self.trading_days[0])
-        minute = minutes[0].normalize()
 
         if frequency == '1m':
             minute = minutes[0]
@@ -472,6 +482,7 @@ class DataPortalTestBase(WithDataPortal,
             'close': 1.005,
             'volume': expected_equity_volume,
         }
+        # Futures prices should be rounded to four decimal places.
         expected_future_values = {
             'open': 1.0055,
             'high': 1.0059,
@@ -481,7 +492,7 @@ class DataPortalTestBase(WithDataPortal,
         }
 
         result = self.data_portal.get_history_window(
-            assets=[equity, future],
+            assets=[equity, future, cf],
             end_dt=minute,
             bar_count=1,
             frequency=frequency,
@@ -492,6 +503,7 @@ class DataPortalTestBase(WithDataPortal,
             {
                 equity: expected_equity_values[field],
                 future: expected_future_values[field],
+                cf: expected_future_values[field],
             },
             index=[minute],
             dtype=float64_dtype,
