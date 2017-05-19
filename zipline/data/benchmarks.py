@@ -15,6 +15,7 @@
 import pandas as pd
 
 from six.moves.urllib_parse import urlencode
+import pandas_datareader.data as web
 
 
 def format_yahoo_index_url(symbol, start_date, end_date):
@@ -51,11 +52,8 @@ def get_benchmark_returns(symbol, start_date, end_date):
     start_date is **not** included because we need the close from day N - 1 to
     compute the returns for day N.
     """
-    return pd.read_csv(
-        format_yahoo_index_url(symbol, start_date, end_date),
-        parse_dates=['Date'],
-        index_col='Date',
-        usecols=["Adj Close", "Date"],
-        squeeze=True,  # squeeze tells pandas to make this a Series
-                       # instead of a 1-column DataFrame
-    ).sort_index().tz_localize('UTC').pct_change(1).iloc[1:]
+    if symbol == "^GSPC":
+        symbol = "spy"
+    benchmark_frame = web.DataReader(symbol, 'google', start_date, end_date)
+    return benchmark_frame["Close"].sort_index().tz_localize('UTC').pct_change(1).iloc[1:]
+    
