@@ -225,12 +225,12 @@ class AlgorithmSimulator(object):
                     for capital_change_packet in once_a_day(dt):
                         yield capital_change_packet
                 elif action == SESSION_END:
+                    pass
                     # End of the session.
-                    if emission_rate == 'daily':
-                        handle_benchmark(normalize_date(dt))
-                    execute_order_cancellation_policy()
-
-                    yield self._get_daily_message(dt, algo, algo.perf_tracker)
+                    #if emission_rate == 'daily':
+                    #    handle_benchmark(normalize_date(dt))
+                    #execute_order_cancellation_policy()
+                    #yield self._get_daily_message(dt, algo, algo.perf_tracker)
                 elif action == BEFORE_TRADING_START_BAR:
                     self.simulation_dt = dt
                     algo.on_dt_changed(dt)
